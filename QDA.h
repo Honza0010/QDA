@@ -12,7 +12,7 @@ class QDA
 	int k;	//Number of classes
 	int m;	//Dimension
 	std::vector<arma::mat> data;
-	std::vector<std::vector<double>> means;
+	std::vector<arma::mat> means;
 
 public:
 	QDA(int k, int m, const std::string& filename);
@@ -27,7 +27,10 @@ private:
 	{
 		std::cout << data[0] << std::endl;
 
-		std::cout << mean(data[0]) << std::endl;
+		for (int i = 0; i < k; i++)
+		{
+			std::cout << means[i] << std::endl;
+		}
 	}
 };
 
@@ -36,9 +39,11 @@ QDA::QDA(int k, int m, const std::string& filename)
 	: k(k), m(m)
 {
 	data = std::vector<arma::mat>(k, arma::mat(0, m));
-	means = std::vector<std::vector<double>>(k, std::vector<double>(m, 0));
+	means = std::vector<arma::mat>(k, arma::mat(1, m));
 
 	load_file(filename);
+
+	calculate_means();
 
 	write();
 }
@@ -79,7 +84,10 @@ void QDA::load_file(const std::string& filename)
 
 void QDA::calculate_means()
 {
-
+	for (int i = 0; i < this->k; i++)
+	{
+		means[i] = arma::mean(data[i]);
+	}
 }
 
 #endif // !__QDA_
