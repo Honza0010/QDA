@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <armadillo>
 
@@ -13,15 +14,19 @@ class QDA
 	int m;	//Dimension
 	std::vector<arma::mat> data;
 	std::vector<arma::mat> means;
+	std::vector<arma::mat> cov_matrices;
 
 public:
 	QDA(int k, int m, const std::string& filename);
 
+	int predict_class(std::vector<double> input_data);
 
 private:
 	void load_file(const std::string& filename);
 
 	void calculate_means();
+
+	void calculate_cov_matrices();
 
 	void write()
 	{
@@ -29,7 +34,8 @@ private:
 
 		for (int i = 0; i < k; i++)
 		{
-			std::cout << means[i] << std::endl;
+			//std::cout << means[i] << std::endl;
+			std::cout << cov_matrices[i] << std::endl;
 		}
 	}
 };
@@ -40,13 +46,18 @@ QDA::QDA(int k, int m, const std::string& filename)
 {
 	data = std::vector<arma::mat>(k, arma::mat(0, m));
 	means = std::vector<arma::mat>(k, arma::mat(1, m));
+	cov_matrices = std::vector<arma::mat>(k, arma::mat());
 
 	load_file(filename);
 
 	calculate_means();
 
+	calculate_cov_matrices();
+
 	write();
 }
+
+
 
 void QDA::load_file(const std::string& filename)
 {
@@ -61,7 +72,15 @@ void QDA::load_file(const std::string& filename)
 			std::vector<double> help(m + 1, 0);
 			for (int i = 0; i <= this->m; i++)
 			{
+				if (file.eof())
+				{
+					throw std::logic_error("Bad format of dataset");
+				}
 				file >> help[i];
+				if (file.fail())
+				{
+					throw std::logic_error("Bad values in dataset");
+				}
 			}
 
 			int index = help[m]-1;
@@ -78,7 +97,7 @@ void QDA::load_file(const std::string& filename)
 	}
 	else
 	{
-
+		throw std::invalid_argument("File could not have been opened");
 	}
 }
 
@@ -88,6 +107,33 @@ void QDA::calculate_means()
 	{
 		means[i] = arma::mean(data[i]);
 	}
+}
+
+void QDA::calculate_cov_matrices()
+{
+	for (int i = 0; i < this->k; i++)
+	{
+		cov_matrices[i] = arma::cov(data[i]);
+	}
+}
+
+
+inline int QDA::predict_class(std::vector<double> input_data)
+{
+	if (input_data.size() != this->m)
+	{
+		throw std::logic_error("Bad dimension of input data");
+	}
+
+	arma::mat help(1,m);
+	for (int i = 0; i < this->m; i++)
+	{
+		help(0, i) = input_data[i];
+	}
+
+	std::cout << help << std::endl;
+
+	return 0;
 }
 
 #endif // !__QDA_
