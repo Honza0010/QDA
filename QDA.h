@@ -119,12 +119,8 @@ void QDA::calculate_cov_matrices()
 	}
 }
 
-template <typename T, typename A>
-int arg_max(std::vector<T, A> const& vec) {
-	return static_cast<int>(std::distance(vec.begin(), max_element(vec.begin(), vec.end())));
-}
 
-inline int QDA::predict_class(std::vector<double> input_data)
+int QDA::predict_class(std::vector<double> input_data)
 {
 	if (input_data.size() != this->m)
 	{
@@ -137,9 +133,9 @@ inline int QDA::predict_class(std::vector<double> input_data)
 		x(0, i) = input_data[i];
 	}
 
-	std::cout << x << std::endl;
 
 	std::vector<double> deltas = std::vector<double>(this->k, 0);
+
 
 	for (int i = 0; i < k; i++)
 	{
@@ -147,12 +143,18 @@ inline int QDA::predict_class(std::vector<double> input_data)
 		deltas[i] =  0.0 - 1.0/2.0 * std::log(std::abs(arma::det(cov_matrices[i])));
 		arma::mat pom = (1.0/2.0) * (x - means[i]) * arma::inv(cov_matrices[i]) * arma::trans(x - means[i]);
 		deltas[i] -= pom(0,0);
-		//std::cout << deltas[i] << std::endl;
+		std::cout << deltas[i] << std::endl;
 	}
 
-	int max = arg_max(deltas);
+	double max = deltas[0];
+	int index = 0;
+	for (int i = 0; i < k; i++)
+	{
+		if (max < deltas[i])
+			index = i;
+	}
 
-	return 0;
+	return index;
 }
 
 
