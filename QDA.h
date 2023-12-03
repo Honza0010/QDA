@@ -151,7 +151,11 @@ int QDA::predict_class(std::vector<double> input_data)
 	for (int i = 0; i < k; i++)
 	{
 		if (max < deltas[i])
+		{
 			index = i;
+			max = deltas[i];
+		}
+			
 	}
 
 	return index;
