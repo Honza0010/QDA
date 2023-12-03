@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <cmath>
+#include <algorithm>
 
 #include <armadillo>
 
@@ -62,7 +64,7 @@ QDA::QDA(int k, int m, const std::string& filename)
 void QDA::load_file(const std::string& filename)
 {
 	std::ifstream file;
-	file.open(filename);  //otevru soubor pro zapis
+	file.open(filename);  
 	if (file.is_open())
 	{
 		int x;
@@ -117,6 +119,10 @@ void QDA::calculate_cov_matrices()
 	}
 }
 
+template <typename T, typename A>
+int arg_max(std::vector<T, A> const& vec) {
+	return static_cast<int>(std::distance(vec.begin(), max_element(vec.begin(), vec.end())));
+}
 
 inline int QDA::predict_class(std::vector<double> input_data)
 {
@@ -125,15 +131,30 @@ inline int QDA::predict_class(std::vector<double> input_data)
 		throw std::logic_error("Bad dimension of input data");
 	}
 
-	arma::mat help(1,m);
+	arma::mat x(1,m);
 	for (int i = 0; i < this->m; i++)
 	{
-		help(0, i) = input_data[i];
+		x(0, i) = input_data[i];
 	}
 
-	std::cout << help << std::endl;
+	std::cout << x << std::endl;
+
+	std::vector<double> deltas = std::vector<double>(this->k, 0);
+
+	for (int i = 0; i < k; i++)
+	{
+		//deltas[i] = arma::det(cov_matrices[i]) - (1.0/2.0) * (x-means[i])* arma::inv(cov_matrices[i])*arma::trans(x - means[i]);
+		deltas[i] =  0.0 - 1.0/2.0 * std::log(std::abs(arma::det(cov_matrices[i])));
+		arma::mat pom = (1.0/2.0) * (x - means[i]) * arma::inv(cov_matrices[i]) * arma::trans(x - means[i]);
+		deltas[i] -= pom(0,0);
+		//std::cout << deltas[i] << std::endl;
+	}
+
+	int max = arg_max(deltas);
 
 	return 0;
 }
+
+
 
 #endif // !__QDA_
