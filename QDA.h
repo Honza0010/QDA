@@ -79,8 +79,8 @@ QDA::QDA(int k, int m, const std::string& filename)
 
 
 
-void QDA::load_file(const std::string& filename)
-{
+void QDA::load_file(const std::string& filename)	// Reads the file which has to be in specific format.
+{													// In rows there are single vector variables and the number of class they are in
 	std::ifstream file;
 	file.open(filename);
 	if (file.is_open())
@@ -123,7 +123,7 @@ void QDA::load_file(const std::string& filename)
 	}
 }
 
-void QDA::calculate_means()
+void QDA::calculate_means()		//Calculate vector of means for each class
 {
 	for (int i = 0; i < this->k; i++)
 	{
@@ -131,7 +131,7 @@ void QDA::calculate_means()
 	}
 }
 
-void QDA::calculate_cov_matrices()
+void QDA::calculate_cov_matrices()		//Calculates cov. matrix for all classes using func. arma::cov()
 {
 	for (int i = 0; i < this->k; i++)
 	{
@@ -139,7 +139,7 @@ void QDA::calculate_cov_matrices()
 	}
 }
 
-void QDA::calculate_probabs()
+void QDA::calculate_probabs()		//Pi_k = # in class k / # of all data
 {
 	for (int i = 0; i < k; i++)
 	{
@@ -156,28 +156,24 @@ int QDA::predict_class(std::vector<double> input_data)
 		throw std::logic_error("Bad dimension of input data");
 	}
 
-	arma::mat x(1, m);
+	arma::mat x(1, m);	//Input data for testing
 	for (int i = 0; i < this->m; i++)
 	{
 		x(0, i) = input_data[i];
 	}
 
-
-	std::vector<double> deltas = std::vector<double>(this->k, 0);
-
-
+	std::vector<double> deltas = std::vector<double>(this->k, 0);	//Delta for each class
+																	//delta(k) = -1/2log(abs(det(cov_k)) - 1/2 (x-mean_k)^T * inv(cov_k) * (x-mean_k) + log(pi_k)
 	for (int i = 0; i < k; i++)
 	{
-		//deltas[i] = arma::det(cov_matrices[i]) - (1.0/2.0) * (x-means[i])* arma::inv(cov_matrices[i])*arma::trans(x - means[i]);
 		deltas[i] = 0.0 - 1.0 / 2.0 * std::log(std::abs(arma::det(cov_matrices[i])));
 		arma::mat pom = (1.0 / 2.0) * (x - means[i]) * arma::inv(cov_matrices[i]) * arma::trans(x - means[i]);
 		deltas[i] -= pom(0, 0);
 		deltas[i] += std::log(probabs[i]);
-		std::cout << deltas[i] << std::endl;
 	}
 
 	double max = deltas[0];
-	int index = 0;
+	int index = 0;				//index = argmax(deltas)
 	for (int i = 0; i < k; i++)
 	{
 		if (max < deltas[i])
@@ -185,7 +181,6 @@ int QDA::predict_class(std::vector<double> input_data)
 			index = i;
 			max = deltas[i];
 		}
-
 	}
 
 	return (index+1);
