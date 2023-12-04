@@ -123,6 +123,7 @@ void QDA::load_file(const std::string& filename)	// Reads the file which has to 
 	}
 }
 
+
 void QDA::calculate_means()		//Calculate vector of means for each class
 {
 	for (int i = 0; i < this->k; i++)
@@ -130,6 +131,7 @@ void QDA::calculate_means()		//Calculate vector of means for each class
 		means[i] = arma::mean(data[i]);
 	}
 }
+
 
 void QDA::calculate_cov_matrices()		//Calculates cov. matrix for all classes using func. arma::cov()
 {
@@ -139,13 +141,20 @@ void QDA::calculate_cov_matrices()		//Calculates cov. matrix for all classes usi
 	}
 }
 
+
 void QDA::calculate_probabs()		//Pi_k = # in class k / # of all data
 {
 	for (int i = 0; i < k; i++)
 	{
-		probabs[i] = (double)data[i].n_rows / (double)this->size;
-		std::cout << probabs[i] << std::endl;
+		probabs[i] = static_cast<double>(data[i].n_rows) / static_cast<double>(this->size);
 	}
+}
+
+
+template <typename T, typename A>
+int arg_max(std::vector<T, A> const& vec) 
+{
+	return static_cast<int>(std::distance(vec.begin(), max_element(vec.begin(), vec.end())));
 }
 
 
@@ -172,7 +181,7 @@ int QDA::predict_class(std::vector<double> input_data)
 		deltas[i] += std::log(probabs[i]);
 	}
 
-	double max = deltas[0];
+	/*double max = deltas[0];
 	int index = 0;				//index = argmax(deltas)
 	for (int i = 0; i < k; i++)
 	{
@@ -181,7 +190,8 @@ int QDA::predict_class(std::vector<double> input_data)
 			index = i;
 			max = deltas[i];
 		}
-	}
+	}*/
+	int index = arg_max(deltas);
 
 	return (index+1);
 }
