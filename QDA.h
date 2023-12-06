@@ -10,6 +10,14 @@
 
 #include <armadillo>
 
+// It is necessary to install armadillo for this to run
+
+// The parameters for the constructor must be the number of classes, dimension and filename from which the data are loaded
+// The file contains training data
+// The file must be in the row format - one variable with its dimension values is in one row separated from each other by space
+										//And at the end of the line there is the class number of this variable
+
+
 class QDA
 {
 	int size;
@@ -23,7 +31,7 @@ class QDA
 public:
 	QDA(int k, int m, const std::string& filename);
 
-	int predict_class(std::vector<double> input_data);
+	int predict_class(std::vector<double> input_data);		//It returns the index of the predicted class for the input data
 
 private:
 	void load_file(const std::string& filename);
@@ -34,25 +42,6 @@ private:
 
 	void calculate_probabs();
 
-	void write()
-	{
-		std::cout << data[0] << std::endl;
-		/*std::cout << this->size << std::endl;
-
-		for (int i = 0; i < k; i++)
-		{
-			for (int j = 0; j < m; j++)
-			{
-				std::cout << means[i](0,j) << " ";
-			}
-			std::cout << std::endl;
-		}*/
-
-		for (int i = 0; i < k; i++)
-		{
-			std::cout << cov_matrices[i] << std::endl;
-		}
-	}
 };
 
 
@@ -71,12 +60,7 @@ QDA::QDA(int k, int m, const std::string& filename)
 	calculate_means();
 
 	calculate_cov_matrices();
-
-	
-
-	write();
 }
-
 
 
 void QDA::load_file(const std::string& filename)	// Reads the file which has to be in specific format.
@@ -181,16 +165,6 @@ int QDA::predict_class(std::vector<double> input_data)
 		deltas[i] += std::log(probabs[i]);
 	}
 
-	/*double max = deltas[0];
-	int index = 0;				//index = argmax(deltas)
-	for (int i = 0; i < k; i++)
-	{
-		if (max < deltas[i])
-		{
-			index = i;
-			max = deltas[i];
-		}
-	}*/
 	int index = arg_max(deltas);
 
 	return (index+1);
